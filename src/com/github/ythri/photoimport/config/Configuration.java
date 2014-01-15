@@ -6,4 +6,5 @@ import java.util.HashMap;
 public class Configuration {
 	public SourceConfig source;
 	public Map<String, TargetConfig> targets = new HashMap<String, TargetConfig>();
+	public Option options;
 }

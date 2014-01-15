@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -47,11 +48,15 @@ public class Main {
 		Handler handler = new ConsoleHandler();
 		handler.setFormatter(new Formatter() {
 			public String format(LogRecord rec) {
-				return String.format("[%tT] %s: %s%n", new Date(rec.getMillis()), rec.getLevel().getName(), formatMessage(rec));
+				if (rec.getThrown() != null) {
+					return String.format("[%tT] %s: %s%n%s%n", new Date(rec.getMillis()), rec.getLevel().getName(), formatMessage(rec), rec.getThrown().toString());
+				} else {
+					return String.format("[%tT] %s: %s%n", new Date(rec.getMillis()), rec.getLevel().getName(), formatMessage(rec));
+				}
 			}
 		});
-		log.addHandler(handler);
-		log.setUseParentHandlers(false);
+		Logger.getLogger("com.github.ythri.photoimport").addHandler(handler);
+		Logger.getLogger("com.github.ythri.photoimport").setUseParentHandlers(false);
 		log.info("PhotoImport " + version);
 
 		// parse command line arguments
@@ -107,6 +112,10 @@ public class Main {
 			log.info(assignments.toString());
 
 			// read source directory
+			if (config.options != null) {
+				ImportGroup.setLocale(config.options.getLocale());
+				ImportGroup.getExifFromExtensions(config.options.readexiffrom);
+			}
 			log.info("Reading source directory");
 			ImportSource finder = new ImportSource();
 			finder.setSourceConfig(config.source);

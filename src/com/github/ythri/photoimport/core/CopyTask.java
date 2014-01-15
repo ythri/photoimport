@@ -35,13 +35,22 @@ public class CopyTask {
 
 			// find common suffix for all files
 			int suffix = (target.suffix.alwaysAppend) ? 1 : 0;
-			while (!checkIfFilenameIsFree(path, file + target.suffix.format(suffix), group)) {
+			while (!checkIfFilenameIsFree(path, file + target.suffix.format(suffix), group, target.subfolders)) {
 				suffix++;
 			}
 
 			// copy files
 			for (File from : group.getFiles()) {
-				File to = new File(path, file + target.suffix.format(suffix) + "." + FileUtils.getExtension(from));
+				String ext = FileUtils.getExtension(from).toLowerCase();
+				File fullPath = path;
+				if (target.subfolders.containsKey(ext)) {
+					fullPath = new File(path, target.subfolders.get(ext));
+					if (!fullPath.exists()) {
+						log.info("Creating directory " + fullPath.toString());
+						fullPath.mkdirs();
+					}
+				}
+				File to = new File(fullPath, file + target.suffix.format(suffix) + "." + FileUtils.getExtension(from));
 				log.info("Copying file " + from.toString() + " to " + to.toString());
 				try {
 					copyFile(from, to);
@@ -52,9 +61,10 @@ public class CopyTask {
 		}
 	}
 
-	private boolean checkIfFilenameIsFree(File path, String fileName, ImportGroup group) {
+	private boolean checkIfFilenameIsFree(File path, String fileName, ImportGroup group, Map<String, String> subfolders) {
 		for (File from : group.getFiles()) {
-			File to = new File(path, fileName + "." + FileUtils.getExtension(from));
+			String ext = FileUtils.getExtension(from).toLowerCase();
+			File to = new File(subfolders.containsKey(ext) ? new File(path, subfolders.get(ext)) : path, fileName + "." + FileUtils.getExtension(from));
 			if (to.exists()) {
 				return false;
 			}

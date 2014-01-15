@@ -18,7 +18,13 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 
 public class ImportGroup implements Comparable<ImportGroup> {
 	private static final Logger log = Logger.getLogger(ImportGroup.class.getName());
+
+	private static Locale locale = Locale.getDefault();
 	private static List<String> exifExtensions = null;
+
+	public static void setLocale(Locale locale) {
+		ImportGroup.locale = locale;
+	}
 
 	public static void getExifFromExtensions(List<String> extensions) {
 		exifExtensions = extensions;
@@ -61,7 +67,7 @@ public class ImportGroup implements Comparable<ImportGroup> {
 			dateTime = new Date(((first == null) ? files.get(0) : first).lastModified());
 			log.warning("Could not read DateTime from EXIF, using lastModified instead.");
 		}
-		putDateTimeProperties(Locale.getDefault());
+		putDateTimeProperties();
 	}
 
 	private void readMetadata(File file) {
@@ -77,7 +83,7 @@ public class ImportGroup implements Comparable<ImportGroup> {
 		}
 	}
 
-	private void putDateTimeProperties(Locale locale) {
+	private void putDateTimeProperties() {
 		properties.put("year", String.format("%tY", dateTime));
 		properties.put("month", String.format("%tm", dateTime));
 		properties.put("day", String.format("%td", dateTime));
