@@ -30,7 +30,18 @@ public class ConfigManager {
 
 	public Configuration load(String fileName) {
 		try {
-			return mapper.readValue(new File(fileName), Configuration.class);
+			Configuration config = mapper.readValue(new File(fileName), Configuration.class);
+			if (config != null && config.options != null) {
+				Suffix suffix = config.options.suffix;
+				if (suffix != null) {
+					for (TargetConfig target : config.targets.values()) {
+						if (target.suffix == null) {
+							target.suffix = suffix;
+						}
+					}
+				}
+			}
+			return config;
 		} catch (IOException e) {
 			log.log(Level.WARNING, "Unable to load configuration file.", e);
 			return null;
