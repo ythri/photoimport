@@ -1,4 +1,4 @@
-package imagemover.cli;
+package com.github.ythri.photoimport.cli;
 
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.IParameterValidator;

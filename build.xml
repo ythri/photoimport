@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="imagemover" default="dist" basedir=".">
+<project name="photoimport" default="dist" basedir=".">
 	<property file="build.properties" />
 	<path id="libs.path">
 		<fileset dir="${basedir}" includes="${requiredjars}" />
@@ -35,7 +35,7 @@
 		</copy>
 
 		<!-- create the executable jar-file -->
-		<jar destfile="${dist}/${imagemover.jar}" basedir="${build}">
+		<jar destfile="${dist}/${photoimport.jar}" basedir="${build}">
 			<manifest>
 				<attribute name="Main-Class" value="${dist.mainclass}"/>
 				<attribute name="Class-Path" value="${requiredjars}"/>

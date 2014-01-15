@@ -1,4 +1,4 @@
-package imagemover.config;
+package com.github.ythri.photoimport.config;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -16,10 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.JsonParser;
 
-public class ConfigurationManager {
+public class ConfigManager {
+	private static final Logger log = Logger.getLogger(ConfigManager.class.getName());
+
 	private ObjectMapper mapper;
 
-	public ConfigurationManager() {
+	public ConfigManager() {
 		mapper = new ObjectMapper();
 		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
@@ -30,7 +32,7 @@ public class ConfigurationManager {
 		try {
 			return mapper.readValue(new File(fileName), Configuration.class);
 		} catch (IOException e) {
-			Logger.getLogger("imagemover").log(Level.WARNING, "Unable to load configuration file.", e);
+			log.log(Level.WARNING, "Unable to load configuration file.", e);
 			return null;
 		}
 	}
@@ -46,7 +48,7 @@ public class ConfigurationManager {
 	public Set<String> getVariables(Configuration config, List<String> activeTargets) {
 		Set<String> variables = new HashSet<String>();
 		for (String targetName : activeTargets) {
-			Target target = config.targets.get(targetName);
+			TargetConfig target = config.targets.get(targetName);
 			addVariables(target.path, variables);
 			addVariables(target.file, variables);
 		}
@@ -63,7 +65,6 @@ public class ConfigurationManager {
 
 	public boolean isValid(Configuration config, List<String> activeTargets) {
 		boolean valid = true;
-		Logger log = Logger.getLogger("imagemover");
 
 		// check source declaration
 		if (config.source == null || config.source.path == null || config.source.path == "") {
@@ -83,7 +84,7 @@ public class ConfigurationManager {
 				log.warning("Target " + key + " does not exist.");
 				valid = false;
 			} else {
-				Target target = config.targets.get(key);
+				TargetConfig target = config.targets.get(key);
 				// check root directory
 				if (target.root == null || target.root == "") {
 					log.warning("Target " + key + " does not specify a root directory.");
