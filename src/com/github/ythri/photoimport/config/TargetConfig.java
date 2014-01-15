@@ -1,9 +1,9 @@
-package imagemover.config;
+package com.github.ythri.photoimport.config;
 
 import java.util.List;
 import java.util.ArrayList;
 
-public class Target {
+public class TargetConfig {
 	public String root;
 	public String path;
 	public String file;

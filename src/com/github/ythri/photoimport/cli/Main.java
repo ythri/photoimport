@@ -1,4 +1,4 @@
-package imagemover.cli;
+package com.github.ythri.photoimport.cli;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -17,18 +17,20 @@ import java.util.logging.ConsoleHandler;
 
 import com.beust.jcommander.JCommander;
 
-import imagemover.config.Configuration;
-import imagemover.config.ConfigurationManager;
-import imagemover.ImageFinder;
-import imagemover.ImageGroup;
-import imagemover.CopyTask;
+import com.github.ythri.photoimport.config.Configuration;
+import com.github.ythri.photoimport.config.ConfigManager;
+import com.github.ythri.photoimport.core.ImportSource;
+import com.github.ythri.photoimport.core.ImportGroup;
+import com.github.ythri.photoimport.core.CopyTask;
 
 /**
- * Command line interface for the ImageMover. The command line interface takes 
+ * Command line interface for the PhotoImport. The command line interface takes 
  * various command line arguments and operates based on these.
  * @author Andreas Ecke
  */
 public class Main {
+	private static final Logger log = Logger.getLogger(Main.class.getName());
+
 	/**
 	 * Version string for the current version of this program.
 	 */
@@ -42,7 +44,6 @@ public class Main {
 	 */
 	public static void main(String... args) {
 		// create logger
-		Logger log = Logger.getLogger("imagemover");
 		Handler handler = new ConsoleHandler();
 		handler.setFormatter(new Formatter() {
 			public String format(LogRecord rec) {
@@ -51,13 +52,13 @@ public class Main {
 		});
 		log.addHandler(handler);
 		log.setUseParentHandlers(false);
-		log.info("ImageMover " + version);
+		log.info("PhotoImport " + version);
 
 		// parse command line arguments
 		log.info("Parsing command line arguments");
 		CommandLineArguments arguments = new CommandLineArguments();
 		JCommander commander = new JCommander(arguments);
-		commander.setProgramName("imagemover");
+		commander.setProgramName("photoimport");
 		try {
 			commander.parse(args);
 		} catch (Exception e) {
@@ -74,7 +75,7 @@ public class Main {
 
 		// Load the configuration file
 		log.info("Reading configuration file");
-		ConfigurationManager configManager = new ConfigurationManager();
+		ConfigManager configManager = new ConfigManager();
 		Configuration config = configManager.load(arguments.getConfigFile());
 		if (config == null) {
 			log.severe("Configuration error");
@@ -82,6 +83,7 @@ public class Main {
 		}
 		List<String> targets = (arguments.getTargets().size() == 0) ? new ArrayList<String>(config.targets.keySet()) : arguments.getTargets();
 		if (configManager.isValid(config, targets)) {
+			// todo: extensions always lowercase
 			Set<String> extensions = configManager.getExtensions(config, targets);
 			Set<String> variables = configManager.getVariables(config, targets);
 			log.info("Extensions: " + extensions.toString());
@@ -89,7 +91,7 @@ public class Main {
 			// identify all used variables and remove those already assigned and file properties
 			log.info("Variables: " + variables.toString());
 			String[] properties = { "year", "month", "day", "hour", "minute", "second", "monthname", "dayname", 
-				"monthshortname", "dayshortname", "filename", "dcfpathnumber", "dcffilenumber" };
+				"monthshortname", "dayshortname", "filename", "dcfpathnumber", "dcffilenumber", "dcfnumber" };
 			variables.removeAll(Arrays.asList(properties));
 			variables.removeAll(arguments.getVariables().keySet());
 			
@@ -106,8 +108,10 @@ public class Main {
 
 			// read source directory
 			log.info("Reading source directory");
-			ImageFinder finder = new ImageFinder(extensions);
-			List<ImageGroup> files = finder.findFiles(config.source); //, arguments.getFrom(), arguments.getTo());
+			ImportSource finder = new ImportSource();
+			finder.setSourceConfig(config.source);
+			finder.setExtensionFilter(extensions);
+			List<ImportGroup> files = finder.findPhotos(); //, arguments.getFrom(), arguments.getTo());
 			Collections.sort(files);
 			log.info("Found " + files.size() + " image groups.");
 

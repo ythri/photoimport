@@ -1,4 +1,4 @@
-package imagemover.cli;
+package com.github.ythri.photoimport.cli;
 
 import java.util.List;
 import java.util.ArrayList;
