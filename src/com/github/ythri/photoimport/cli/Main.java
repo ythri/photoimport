@@ -120,6 +120,8 @@ public class Main {
 			ImportSource finder = new ImportSource();
 			finder.setSourceConfig(config.source);
 			finder.setExtensionFilter(extensions);
+			finder.setDcfNumberFilter(arguments.getMin(), arguments.getMax());
+			finder.setDateFilter(arguments.getBegin(), arguments.getEnd());
 			List<ImportGroup> files = finder.findPhotos(); //, arguments.getFrom(), arguments.getTo());
 			Collections.sort(files);
 			log.info("Found " + files.size() + " image groups.");

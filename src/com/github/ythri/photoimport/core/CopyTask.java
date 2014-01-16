@@ -54,6 +54,9 @@ public class CopyTask {
 				log.info("Copying file " + from.toString() + " to " + to.toString());
 				try {
 					copyFile(from, to);
+					if (target.verify && FileUtils.checksum(from) != FileUtils.checksum(to)) {
+						log.warning("Files " + from + " and " + to + " have different checksums");
+					}
 				} catch (IOException e) {
 					log.log(Level.WARNING, "Could not move file", e);
 				}
