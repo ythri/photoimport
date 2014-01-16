@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Date;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 import com.beust.jcommander.Parameter;
 
@@ -43,11 +48,17 @@ class CommandLineArguments {
 	@Parameter(names = { "-h", "--help" }, description = "Show this help", help = true)
 	private Boolean help = false;
 
-	@Parameter(names = "--from", description = "copy files from a DCF file system starting only at a given number")
-	private Integer from = null;
+	@Parameter(names = "--min", description = "copy files from a DCF file system starting only at a given number")
+	private Integer min = null;
 
-	@Parameter(names = "--to", description = "copy files from a DCF file system up to a given number")
-	private Integer to = null;
+	@Parameter(names = "--max", description = "copy files from a DCF file system up to a given number")
+	private Integer max = null;
+
+	@Parameter(names = "--begin", description = "copy files starting only at a given date")
+	private String begin = null;
+
+	@Parameter(names = "--end", description = "copy files up to a given date")
+	private String end = null;
 
 	/**
 	 * Returns the name of the configuration file that should be loaded and processed.
@@ -79,6 +90,24 @@ class CommandLineArguments {
 		return targets;
 	}
 
+	private final DateFormat[] part = {
+		new SimpleDateFormat("yyyy.MM.dd"),
+		new SimpleDateFormat("yyyy-MM-dd"),
+		new SimpleDateFormat("yyyyMMdd")
+	};
+	private final DateFormat[] full = {
+		new SimpleDateFormat("yyyy.MM.dd HH:mm:ss"),
+		new SimpleDateFormat("yyyy-MM-dd HH-mm-ss"),
+		new SimpleDateFormat("yyyy.MM.dd,HH:mm:ss"),
+		new SimpleDateFormat("yyyy-MM-dd,HH-mm-ss"),
+		new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss"),
+		new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"),
+		new SimpleDateFormat("yyyyMMdd HHmmss"),
+		new SimpleDateFormat("yyyyMMdd,HHmmss"),
+		new SimpleDateFormat("yyyyMMdd-HHmmss"),
+		new SimpleDateFormat("yyyyMMddHHmmss")
+	};
+
 	/**
 	 * Checks if the help argument was given and thus the usage should be displayed.
 	 * @return true, if usage should be displayed, otherwise false
@@ -87,11 +116,53 @@ class CommandLineArguments {
 		return help;
 	}
 
-	public Integer getFrom() {
-		return from;
+	public Integer getMin() {
+		return min;
 	}
 
-	public Integer getTo() {
-		return to;
+	public Integer getMax() {
+		return max;
+	}
+
+	public Date getBegin() {
+		if (begin == null) return null;
+		if (begin.length() <= 12) {
+			for (DateFormat f : part) {
+				try {
+					Date date = f.parse(begin);
+					if (date != null) return date;
+				} catch (ParseException e) {}
+			}
+		} else {
+			for (DateFormat f : full) {
+				try {
+					Date date = f.parse(begin);
+					if (date != null) return date;
+				} catch (ParseException e) {}
+			}
+		}
+		return null;
+	}
+
+	public Date getEnd() {
+		if (end == null) return null;
+		if (end.length() <= 12) {
+			for (DateFormat f : part) {
+				try {
+					Date date = f.parse(end);
+					if (date != null) {
+						return new Date(date.getTime() + 1000L * 60 * 60 * 24 - 1);
+					}
+				} catch (ParseException e) {}
+			}
+		} else {
+			for (DateFormat f : full) {
+				try {
+					Date date = f.parse(end);
+					if (date != null) return date;
+				} catch (ParseException e) {}
+			}
+		}
+		return null;
 	}
 }
